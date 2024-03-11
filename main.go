@@ -1,7 +1,9 @@
 package main
 
 import (
+	"flag"
 	"fmt"
+	"os"
 )
 
 type Animal struct {
@@ -42,15 +44,15 @@ type Race struct {
 	Place
 }
 
-func (a *Animal) WinnerSay() {
+func (a Animal) WinnerSay() {
 	fmt.Printf("%s says: %s\n", a.name, a.voice)
 }
 
-func (a *Animal) LoserSay() {
+func (a Animal) LoserSay() {
 	fmt.Printf("%s says: Ohhhh noooo, I lost((((\n", a.name)
 }
 
-func (a *Animal) SecondSay() {
+func (a Animal) SecondSay() {
 	fmt.Printf("%s says: I'm only Second((((((\n", a.name)
 }
 
@@ -106,6 +108,13 @@ func (r *Race) FindSecondPlace() {
 	r.Place.second.SecondSay()
 }
 
+func (r *Race) Draw() {
+	if r.Turtle.runSpeed >= r.distance && r.Tiger.runSpeed >= r.distance && r.Fish.runSpeed >= r.distance {
+		fmt.Println("It's a draw!")
+		os.Exit(0)
+	}
+}
+
 func (r *Race) Start() {
 	fmt.Println("The race has started!")
 	fmt.Printf("Distance: %d\nTiger speed: %d\nFish speed: %d\nTurtle speed: %d\n", r.distance, r.Tiger.runSpeed,
@@ -130,24 +139,30 @@ func (r *Race) Start() {
 	}
 	fmt.Println("The race was finished!")
 
-	if r.Turtle.runSpeed >= r.distance && r.Tiger.runSpeed >= r.distance && r.Fish.runSpeed >= r.distance {
-		fmt.Println("It's a draw!")
-	} else {
-		r.FindWinner()
-		r.FindSecondPlace()
-		r.FindLoser()
-	}
+	r.Draw()
+	r.FindWinner()
+	r.FindSecondPlace()
+	r.FindLoser()
 }
 
 func main() {
+	turtleSpeed := flag.Int("turtle-speed", 50, "speed of the turtle")
+	tigerSpeed := flag.Int("tiger-speed", 120, "speed of the tiger")
+	fishSpeed := flag.Int("fish-speed", 101, "speed of the fish")
+
+	flag.Parse()
+
 	race := Race{
 		distance: 1000,
 	}
 	race.CreateTeam(
-		Turtle{Animal: Animal{iteration: 0, runSpeed: 100, name: "Turtle", voice: "I am a turtle!"}, armorSize: 15.5, armorColor: "Brown"},
-		Tiger{Animal: Animal{iteration: 0, runSpeed: 150, name: "Tiger", voice: "Roar!"}, colorOfStripes: "Black", numOfFangs: 4},
-		Fish{Animal: Animal{iteration: 0, runSpeed: 120, name: "Fish", voice: "Blub-blub!"}, numOfFins: 5, PresenceOfThorns: false},
+		Turtle{Animal: Animal{iteration: 0, runSpeed: *turtleSpeed, name: "Turtle",
+			voice: "I am a turtle!"}, armorSize: 15.5, armorColor: "Brown"},
+		Tiger{Animal: Animal{iteration: 0, runSpeed: *tigerSpeed, name: "Tiger", voice: "Roar!"},
+			colorOfStripes: "Black", numOfFangs: 4},
+		Fish{Animal: Animal{iteration: 0, runSpeed: *fishSpeed, name: "Fish", voice: "Blub-blub!"},
+			numOfFins: 5, PresenceOfThorns: false},
 	)
-	race.Start()
 
+	race.Start()
 }
